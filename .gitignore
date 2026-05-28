@@ -1,0 +1,22 @@
+# Java / Maven
+target/
+*.class
+*.jar
+*.war
+.mvn/wrapper/maven-wrapper.jar
+# IDE
+.idea/
+*.iml
+.vscode/
+.project
+.classpath
+.settings/
+# OS
+.DS_Store
+# Logs / runtime
+*.log
+logs/
+# Helm
+charts/*.tgz
+# OpenAPI generated drafts
+api/openapi/*.draft.yaml

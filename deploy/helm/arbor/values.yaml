@@ -38,7 +38,23 @@ kafka:
 opentelemetry-collector:
   mode: deployment
   image: { repository: otel/opentelemetry-collector-contrib }
-  config: {}  # rendered from configmap in templates/otel-config.yaml
+  command:
+    name: otelcol-contrib
+    extraArgs: ["--config=/conf/collector.yaml"]
+  extraVolumes:
+    - name: cfg
+      configMap: { name: otel-collector-config }
+  extraVolumeMounts:
+    - { name: cfg, mountPath: /conf }
+  extraEnvs:
+    - name: OLLYGARDEN_API_KEY
+      valueFrom:
+        secretKeyRef:
+          name: ollygarden-api-key
+          key: api-key
+          optional: true
+  service:
+    type: ClusterIP
 
 jaeger:
   provisionDataStore: { cassandra: false }

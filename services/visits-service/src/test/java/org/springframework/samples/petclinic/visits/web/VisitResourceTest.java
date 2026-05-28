@@ -3,6 +3,7 @@ package org.springframework.samples.petclinic.visits.web;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
+import org.springframework.samples.petclinic.visits.event.VisitEventPublisher;
 import org.springframework.samples.petclinic.visits.model.Visit;
 import org.springframework.samples.petclinic.visits.model.VisitRepository;
 import org.springframework.test.context.ActiveProfiles;
@@ -25,6 +26,9 @@ class VisitResourceTest {
 
     @MockitoBean
     VisitRepository visitRepository;
+
+    @MockitoBean
+    VisitEventPublisher visitEventPublisher;
 
     @Test
     void shouldFetchVisits() throws Exception {

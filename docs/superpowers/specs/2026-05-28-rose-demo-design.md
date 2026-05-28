@@ -1,12 +1,15 @@
-# Rose Demo Mono Repo — Design
+# Arbor — Rose Demo Mono Repo Design
 
 **Status:** Draft for review
 **Date:** 2026-05-28
 **Owner:** Juraci Paixão Kröhling
+**Repo:** `ollygarden-demo/arbor`
+
+The repo is named **arbor** — a garden structure that supports climbing roses — fitting OllyGarden's plant-themed naming and signalling that the project exists to showcase Rose.
 
 ## 1. Goal & Narrative
 
-`ollygarden-demo` is a mono repo hosting a forked **Spring PetClinic Microservices** application, augmented to match a realistic enterprise Spring Boot architecture (Envoy sidecar, Kafka, OpenAPI), and structured so each Rose capability can be demonstrated as a single `git checkout <branch> && rose run` flow.
+`arbor` is a mono repo hosting a forked **Spring PetClinic Microservices** application, augmented to match a realistic enterprise Spring Boot architecture (Envoy sidecar, Kafka, OpenAPI), and structured so each Rose capability can be demonstrated as a single `git checkout <branch> && rose run` flow.
 
 The repo has two faces:
 
@@ -83,7 +86,7 @@ All branches fork from `main`. The branch name encodes intent; the diff vs `main
 ## 4. Repo Layout
 
 ```
-ollygarden-demo/
+arbor/
 ├── README.md                       # demo intro, quickstart, scenario index
 ├── Makefile                        # make up / down / load / scenario-<name>
 ├── services/
@@ -99,15 +102,17 @@ ollygarden-demo/
 │   ├── vets.yaml
 │   └── visits.yaml
 ├── deploy/
-│   ├── helm/ollygarden-demo/       # umbrella chart
+│   ├── helm/arbor/                 # umbrella chart (published to GHCR OCI)
 │   │   ├── Chart.yaml
 │   │   ├── values.yaml             # OTLP endpoint, OllyGarden API key ref
 │   │   └── templates/              # one Deployment per service w/ Envoy sidecar
 │   ├── envoy/                      # sidecar config templates
 │   └── kind/                       # kind cluster config, registry, bootstrap
 ├── observability/
-│   ├── otel-collector/             # Collector config (OTLP → OllyGarden)
+│   ├── otel-collector/             # Collector config (OTLP → OllyGarden + local Jaeger)
 │   ├── prometheus/                 # scrape config
+│   ├── jaeger/                     # offline-demo trace backend
+│   ├── grafana/                    # offline-demo dashboards (Prom + Jaeger sources)
 │   └── kafka/                      # Strimzi / Bitnami values
 ├── scripts/
 │   ├── load.sh                     # k6 traffic generator
@@ -126,6 +131,10 @@ ollygarden-demo/
 - `scenario/<slug>` — one branch per Rose capability. Each branch adds a `SCENARIO.md` at the repo root in addition to the per-scenario doc on `main` under `docs/scenarios/`.
 
 **Image strategy:** each service has a Dockerfile; CI publishes `:main` and `:scenario-<slug>` tags. Helm chart picks tag via `values.yaml`, so switching scenarios is `helm upgrade --set imageTag=scenario-fix-baggage`.
+
+**Chart distribution:** the umbrella chart is published as an **OCI artifact to GHCR** (`oci://ghcr.io/ollygarden-demo/charts/arbor`), so a demo machine can `helm install` without cloning the repo.
+
+**`notifications-service` shape:** Kafka-only (consumer + minimal `/actuator/health` for k8s probes). It does not expose a business HTTP API and so does not appear in OpenAPI tooling — this keeps the async-chain story uncluttered.
 
 ## 5. Data Flow & Telemetry
 
@@ -146,7 +155,7 @@ Every hop carries W3C `traceparent` + `baggage` headers. On `main`, baggage carr
 
 **Telemetry signals:**
 
-- **Traces** — emitted by each Spring Boot service via OTel Java agent (auto) plus manual spans where useful (Kafka producer/consumer). Envoy sidecar emits its own spans; Collector merges them via shared `traceparent`. Exported OTLP/gRPC → Collector → OllyGarden.
+- **Traces** — emitted by each Spring Boot service via OTel Java agent (auto) plus manual spans where useful (Kafka producer/consumer). Envoy sidecar emits its own spans; Collector merges them via shared `traceparent`. Exported OTLP/gRPC → Collector → OllyGarden **and** in-cluster Jaeger (offline-demo fallback).
 - **Metrics** — Micrometer → Prometheus endpoint (`/actuator/prometheus`) scraped by Prometheus; also mirrored OTLP to Collector → OllyGarden. Envoy stats scraped separately.
 - **Logs** — Logback with OTel appender → Collector → OllyGarden. Logs carry trace/span IDs.
 
@@ -155,7 +164,7 @@ Every hop carries W3C `traceparent` + `baggage` headers. On `main`, baggage carr
 ```
 receivers:  otlp (gRPC + HTTP), prometheus (scrape)
 processors: batch, resourcedetection (k8s), memory_limiter
-exporters:  otlp/ollygarden, debug (off by default)
+exporters:  otlp/ollygarden, otlp/jaeger (in-cluster), debug (off by default)
 ```
 
 The OllyGarden API key lives in a k8s Secret referenced by the Collector chart values; never committed.
@@ -188,7 +197,7 @@ The repo is a demo, not a product; testing is scoped to "the demo runs and the s
 - Each `scenario/*` branch ships a `SCENARIO.md` with a manual checklist:
   - "Before Rose: run `scripts/verify-before.sh` — expect failure with message X."
   - "After Rose: run `scripts/verify-after.sh` — expect pass."
-- Verify scripts query the Collector (or a small in-cluster trace store like Jaeger if we add one for offline demos) for the expected attribute / baggage / cardinality property.
+- Verify scripts query in-cluster **Jaeger** (always present per Section 5) for the expected attribute / baggage / cardinality property — no dependency on the OllyGarden cloud for offline demos.
 - Optional GH Actions workflow `scenario-smoke.yml`: for each branch, runs `verify-before.sh` and asserts it fails, proving the "bad state" is real.
 
 **Out of scope:**
@@ -196,8 +205,8 @@ The repo is a demo, not a product; testing is scoped to "the demo runs and the s
 - No load / performance testing — `k6` script is for traffic generation, not benchmarks.
 - No contract testing across services beyond what springdoc + petclinic already provide.
 
-## 7. Open Questions / Deferred
+## 7. Resolved Decisions
 
-- Whether to ship an optional Jaeger/Grafana stack in the chart for offline demos (currently telemetry exits the cluster to OllyGarden).
-- Whether `notifications-service` should also expose an HTTP endpoint so it appears in OpenAPI tooling, or remain Kafka-only.
-- Helm chart distribution: published to GHCR OCI registry, or repo-local only.
+- **Offline-demo backend:** Jaeger + Grafana ship in the umbrella chart; Collector dual-exports to OllyGarden and Jaeger.
+- **`notifications-service` shape:** Kafka-only (no business HTTP API, no OpenAPI entry).
+- **Helm distribution:** chart published as OCI artifact to GHCR (`oci://ghcr.io/ollygarden-demo/charts/arbor`).

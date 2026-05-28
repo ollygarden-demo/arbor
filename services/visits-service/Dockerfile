@@ -2,11 +2,9 @@
 FROM maven:3.9-eclipse-temurin-21 AS build
 WORKDIR /src
 COPY pom.xml .
-COPY .mvn .mvn
-COPY mvnw .
-RUN ./mvnw -q -DskipTests dependency:go-offline
+RUN mvn -q -DskipTests dependency:go-offline
 COPY src src
-RUN ./mvnw -q -DskipTests package && \
+RUN mvn -q -DskipTests package && \
     cp target/*.jar /app.jar
 
 FROM eclipse-temurin:21-jre-alpine

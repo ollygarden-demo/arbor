@@ -1,0 +1,21 @@
+apiVersion: k3d.io/v1alpha5
+kind: Simple
+metadata:
+  name: arbor
+servers: 1
+agents: 2
+image: rancher/k3s:v1.31.4-k3s1
+registries:
+  create:
+    name: arbor-registry
+    host: "0.0.0.0"
+    hostPort: "5001"
+options:
+  k3d:
+    wait: true
+    timeout: "300s"
+  k3s:
+    extraArgs:
+      - arg: --disable=traefik
+        nodeFilters:
+          - server:*

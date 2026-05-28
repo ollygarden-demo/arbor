@@ -2,23 +2,16 @@
 set -euo pipefail
 
 CLUSTER=arbor
+REGISTRY_NAME=arbor-registry
 REGISTRY_PORT=5001
-REGISTRY_NAME=kind-registry
 NS=arbor
 
-# Start a local registry so kind nodes can pull our locally-built images.
-if [ -z "$(docker ps -q -f name=^${REGISTRY_NAME}$)" ]; then
-  docker run -d --restart=always -p "127.0.0.1:${REGISTRY_PORT}:5000" \
-    --name "${REGISTRY_NAME}" registry:2
+# Create cluster if missing (k3d also creates the registry per cluster.yaml).
+if ! k3d cluster list | awk 'NR>1 {print $1}' | grep -qx "${CLUSTER}"; then
+  k3d cluster create --config deploy/k3d/cluster.yaml
 fi
 
-# Create cluster if missing.
-if ! kind get clusters | grep -qx "${CLUSTER}"; then
-  kind create cluster --config deploy/kind/cluster.yaml
-  docker network connect kind "${REGISTRY_NAME}" || true
-fi
-
-# Build and push images to the local registry.
+# Build and push service images to the k3d-managed registry.
 for d in services/*/; do
   s=$(basename "$d")
   img="localhost:${REGISTRY_PORT}/ollygarden-demo/${s}:main"
@@ -38,7 +31,7 @@ fi
 helm dependency update deploy/helm/arbor
 helm upgrade --install arbor deploy/helm/arbor \
   --namespace "$NS" \
-  --set imageRegistry="localhost:${REGISTRY_PORT}/ollygarden-demo" \
+  --set imageRegistry="k3d-${REGISTRY_NAME}:${REGISTRY_PORT}/ollygarden-demo" \
   -f deploy/helm/arbor/values-local.yaml \
   --wait --timeout 5m
 

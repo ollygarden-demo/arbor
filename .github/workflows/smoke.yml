@@ -10,10 +10,8 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-java@v4
         with: { distribution: temurin, java-version: '21', cache: maven }
-      - uses: helm/kind-action@v1
-        with:
-          config: deploy/kind/cluster.yaml
-          cluster_name: arbor
+      - name: install k3d
+        run: curl -s https://raw.githubusercontent.com/k3d-io/k3d/main/install.sh | bash
       - uses: azure/setup-helm@v4
       - uses: grafana/setup-k6-action@v1
       - name: install jq

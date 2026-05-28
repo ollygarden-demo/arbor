@@ -11,7 +11,7 @@ See `docs/superpowers/specs/2026-05-28-rose-demo-design.md` (authoritative) and
 
 ## Quickstart
 
-Requires: `docker`, `kind`, `kubectl`, `helm`, `k6`, `jq`, Java 21, Maven 3.9+.
+Requires: `docker`, `k3d`, `kubectl`, `helm`, `k6`, `jq`, Java 21, Maven 3.9+.
 
 ```sh
 make up        # build images, create kind cluster, install chart (~5 min first run)

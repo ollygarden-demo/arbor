@@ -1,6 +1,6 @@
 java temurin-21.0.5+11
 maven 3.9.9
 helm 3.16.3
-kind 0.25.0
+k3d 5.8.3
 kubectl 1.31.4
 k6 0.55.0

@@ -1,0 +1,26 @@
+name: smoke
+on:
+  pull_request: {}
+  push: { branches: [main] }
+jobs:
+  e2e:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with: { distribution: temurin, java-version: '21', cache: maven }
+      - uses: helm/kind-action@v1
+        with:
+          config: deploy/kind/cluster.yaml
+          cluster_name: arbor
+      - uses: azure/setup-helm@v4
+      - uses: grafana/setup-k6-action@v1
+      - name: install jq
+        run: sudo apt-get update && sudo apt-get install -y jq
+      - name: bootstrap
+        run: ./scripts/bootstrap.sh
+        env:
+          OLLYGARDEN_API_KEY: ""
+      - name: smoke
+        run: ./scripts/smoke.sh

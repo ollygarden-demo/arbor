@@ -5,5 +5,5 @@ app.kubernetes.io/managed-by: Helm
 {{- end -}}
 
 {{- define "arbor.image" -}}
-{{ $.Values.imageRegistry }}/{{ .name }}:{{ $.Values.imageTag }}
+{{ .Values.imageRegistry }}/{{ .name }}:{{ .Values.imageTag }}
 {{- end -}}

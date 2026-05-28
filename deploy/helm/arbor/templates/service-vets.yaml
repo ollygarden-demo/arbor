@@ -1,0 +1,50 @@
+{{- $s := .Values.services.vets }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ $s.name }}
+  labels: {{- include "arbor.labels" (dict "name" $s.name) | nindent 4 }}
+spec:
+  replicas: 1
+  selector: { matchLabels: { app.kubernetes.io/name: {{ $s.name }} } }
+  template:
+    metadata:
+      labels: {{- include "arbor.labels" (dict "name" $s.name) | nindent 8 }}
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "{{ $s.port }}"
+        prometheus.io/path: "/actuator/prometheus"
+    spec:
+      containers:
+        - name: app
+          image: {{ include "arbor.image" (dict "name" $s.name "Values" .Values) | trim }}
+          imagePullPolicy: {{ .Values.imagePullPolicy }}
+          ports: [{ containerPort: {{ $s.port }} }]
+          env:
+            - { name: SPRING_PROFILES_ACTIVE,         value: "kubernetes" }
+            - { name: EUREKA_SERVER_URL,              value: "http://discovery-server:8761/eureka/" }
+            - { name: CONFIG_SERVER_URL,              value: "http://config-server:8888" }
+            - { name: KAFKA_BOOTSTRAP,                value: "arbor-kafka:9092" }
+            - { name: OTEL_EXPORTER_OTLP_ENDPOINT,    value: "http://otel-collector:4318" }
+            - { name: OTEL_SERVICE_NAME,              value: "{{ $s.name }}" }
+            - { name: OTEL_RESOURCE_ATTRIBUTES,       value: "deployment.environment=arbor" }
+          readinessProbe:
+            httpGet: { path: /actuator/health/readiness, port: {{ $s.port }} }
+            initialDelaySeconds: 10
+        - name: envoy
+          image: {{ .Values.envoy.image }}
+          args: ["-c", "/etc/envoy/sidecar.yaml"]
+          ports: [{ containerPort: 15001 }]
+          volumeMounts:
+            - { name: envoy-config, mountPath: /etc/envoy }
+      volumes:
+        - name: envoy-config
+          configMap: { name: arbor-envoy-sidecar }
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ $s.name }}
+spec:
+  selector: { app.kubernetes.io/name: {{ $s.name }} }
+  ports: [{ name: http, port: {{ $s.port }}, targetPort: {{ $s.port }} }]

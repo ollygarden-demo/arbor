@@ -1,0 +1,8 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: arbor-envoy-sidecar
+  labels: {{- include "arbor.labels" (dict "name" "envoy") | nindent 4 }}
+data:
+  sidecar.yaml: |
+{{ .Files.Get "files/envoy-sidecar.yaml" | indent 4 }}

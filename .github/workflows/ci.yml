@@ -1,0 +1,35 @@
+name: ci
+on:
+  pull_request: {}
+  push: { branches: [main] }
+jobs:
+  java:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        service:
+          - api-gateway
+          - customers-service
+          - vets-service
+          - visits-service
+          - notifications-service
+          - discovery-server
+          - config-server
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with: { distribution: temurin, java-version: '21', cache: maven }
+      - name: build + test
+        working-directory: services/${{ matrix.service }}
+        run: ./mvnw -q verify
+      - name: docker build
+        run: docker build -t arbor-${{ matrix.service }}:ci services/${{ matrix.service }}
+
+  helm:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: azure/setup-helm@v4
+      - run: helm dependency update deploy/helm/arbor
+      - run: helm lint deploy/helm/arbor
+      - run: helm template arbor deploy/helm/arbor --namespace arbor > /tmp/render.yaml

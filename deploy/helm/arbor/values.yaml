@@ -68,6 +68,11 @@ prom:
   grafana:
     adminPassword: arbor
     dashboardProviders: {}
+    sidecar:
+      dashboards:
+        enabled: true
+        label: grafana_dashboard
+        searchNamespace: ALL
   prometheus:
     prometheusSpec:
       serviceMonitorSelectorNilUsesHelmValues: false

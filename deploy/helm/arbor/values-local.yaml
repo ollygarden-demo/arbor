@@ -1,0 +1,3 @@
+ollyGarden:
+  otlpEndpoint: ""  # leave blank to skip cloud export in local demos
+imagePullPolicy: Never  # use locally-built kind images

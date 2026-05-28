@@ -1,0 +1,8 @@
+arbor is up.
+
+Gateway:     kubectl -n arbor port-forward svc/api-gateway 8080:8080
+Jaeger UI:   kubectl -n arbor port-forward svc/jaeger 16686:16686
+Grafana:     kubectl -n arbor port-forward svc/arbor-prom-grafana 3000:80   (admin / arbor)
+
+Generate load:   make load
+Smoke test:      make smoke

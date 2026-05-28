@@ -1,0 +1,21 @@
+apiVersion: v2
+name: arbor
+description: OllyGarden arbor demo (Rose showcase) — PetClinic + Envoy + Kafka + OTel
+type: application
+version: 0.1.0
+appVersion: "main"
+icon: https://ollygarden.com/favicon.svg
+dependencies:
+  - name: kafka
+    version: 32.4.3
+    repository: https://charts.bitnami.com/bitnami
+  - name: opentelemetry-collector
+    version: 0.157.1
+    repository: https://open-telemetry.github.io/opentelemetry-helm-charts
+  - name: jaeger
+    version: 4.8.0
+    repository: https://jaegertracing.github.io/helm-charts
+  - name: kube-prometheus-stack
+    version: 86.0.1
+    repository: https://prometheus-community.github.io/helm-charts
+    alias: prom

@@ -1,0 +1,57 @@
+imageRegistry: ghcr.io/ollygarden-demo
+imageTag: main
+imagePullPolicy: IfNotPresent
+
+ollyGarden:
+  otlpEndpoint: ""            # set via --set or values-local.yaml
+  apiKeySecretRef:
+    name: ollygarden-api-key
+    key: api-key
+
+envoy:
+  image: envoyproxy/envoy:v1.31-latest
+
+services:
+  apiGateway:     { name: api-gateway,     port: 8080 }
+  customers:      { name: customers-service, port: 8081 }
+  vets:           { name: vets-service,    port: 8083 }
+  visits:         { name: visits-service,  port: 8082 }
+  notifications:  { name: notifications-service, port: 8088 }
+  discovery:      { name: discovery-server, port: 8761 }
+  config:         { name: config-server,   port: 8888 }
+
+kafka:
+  controller: { replicaCount: 1 }
+  broker:     { replicaCount: 1 }
+  listeners:
+    client:
+      protocol: PLAINTEXT
+  sasl:
+    enabledMechanisms: ""
+  provisioning:
+    enabled: true
+    topics:
+      - name: visit.created
+        partitions: 3
+        replicationFactor: 1
+
+opentelemetry-collector:
+  mode: deployment
+  image: { repository: otel/opentelemetry-collector-contrib }
+  config: {}  # rendered from configmap in templates/otel-config.yaml
+
+jaeger:
+  provisionDataStore: { cassandra: false }
+  allInOne: { enabled: true }
+  storage: { type: memory }
+  agent: { enabled: false }
+  collector: { enabled: false }
+  query: { enabled: false }
+
+prom:
+  grafana:
+    adminPassword: arbor
+    dashboardProviders: {}
+  prometheus:
+    prometheusSpec:
+      serviceMonitorSelectorNilUsesHelmValues: false

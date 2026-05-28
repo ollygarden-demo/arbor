@@ -1,0 +1,4 @@
+.git/
+*.tgz
+charts/
+README.md.gotmpl

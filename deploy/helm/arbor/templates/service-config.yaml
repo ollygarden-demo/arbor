@@ -28,7 +28,9 @@ spec:
             - { name: OTEL_RESOURCE_ATTRIBUTES,       value: "deployment.environment=arbor" }
           readinessProbe:
             httpGet: { path: /actuator/health/readiness, port: {{ $s.port }} }
-            initialDelaySeconds: 10
+            initialDelaySeconds: 60
+            periodSeconds: 10
+            failureThreshold: 30
 ---
 apiVersion: v1
 kind: Service

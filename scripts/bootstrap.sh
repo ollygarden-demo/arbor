@@ -33,6 +33,6 @@ helm upgrade --install arbor deploy/helm/arbor \
   --namespace "$NS" \
   --set imageRegistry="k3d-${REGISTRY_NAME}:${REGISTRY_PORT}/ollygarden-demo" \
   -f deploy/helm/arbor/values-local.yaml \
-  --wait --timeout 5m
+  --wait --timeout 10m
 
 echo "✓ arbor is up. See: kubectl -n ${NS} get pods"

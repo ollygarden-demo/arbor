@@ -26,7 +26,9 @@ spec:
             - { name: OTEL_RESOURCE_ATTRIBUTES,       value: "deployment.environment=arbor" }
           readinessProbe:
             httpGet: { path: /actuator/health/readiness, port: {{ $s.port }} }
-            initialDelaySeconds: 10
+            initialDelaySeconds: 60
+            periodSeconds: 10
+            failureThreshold: 30
         - name: envoy
           image: {{ .Values.envoy.image }}
           args: ["-c", "/etc/envoy/sidecar.yaml"]

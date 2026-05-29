@@ -23,6 +23,17 @@ management:
         enabled: true
       show-details: always
 
+# Standalone Eureka: do not register or fetch registry from peers.
+eureka:
+  client:
+    register-with-eureka: false
+    fetch-registry: false
+  instance:
+    hostname: discovery-server
+
+server:
+  port: 8761
+
 ---
 spring:
   config:

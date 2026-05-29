@@ -22,3 +22,15 @@ jobs:
           OLLYGARDEN_API_KEY: ""
       - name: smoke
         run: ./scripts/smoke.sh
+      - name: dump cluster state on failure
+        if: failure()
+        run: |
+          set +e
+          echo "=== pods ==="
+          kubectl -n arbor get pods -o wide
+          echo "=== events ==="
+          kubectl -n arbor get events --sort-by='.lastTimestamp' | tail -50
+          for p in $(kubectl -n arbor get pods -o name | grep -vE "kafka|grafana|jaeger|prom|node-exporter|alertmanager|kube-state"); do
+            echo "=== logs: $p (app) ==="
+            kubectl -n arbor logs "$p" -c app --tail=40 2>/dev/null || kubectl -n arbor logs "$p" --tail=40
+          done

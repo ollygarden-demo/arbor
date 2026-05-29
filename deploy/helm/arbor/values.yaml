@@ -21,31 +21,56 @@ services:
   config:         { name: config-server,   port: 8888 }
 
 kafka:
+  # Bitnami moved their public Docker Hub images to bitnamilegacy/* in Aug 2025.
+  image:
+    repository: bitnamilegacy/kafka
   controller: { replicaCount: 1 }
   broker:     { replicaCount: 1 }
   listeners:
-    client:
-      protocol: PLAINTEXT
+    client:     { protocol: PLAINTEXT }
+    controller: { protocol: PLAINTEXT }
+    interbroker: { protocol: PLAINTEXT }
+    external:   { protocol: PLAINTEXT }
   sasl:
     enabledMechanisms: ""
+    interBrokerMechanism: ""
+    controllerMechanism: ""
   provisioning:
     enabled: true
     topics:
       - name: visit.created
         partitions: 3
         replicationFactor: 1
+  serviceAccount:
+    create: true
+  rbac:
+    create: true
+  defaultInitContainers:
+    prepareConfig:
+      image:
+        repository: bitnamilegacy/os-shell
+    volumePermissions:
+      image:
+        repository: bitnamilegacy/os-shell
+    autoDiscovery:
+      image:
+        repository: bitnamilegacy/kubectl
+  metrics:
+    jmx:
+      image:
+        repository: bitnamilegacy/jmx-exporter
 
 opentelemetry-collector:
   mode: deployment
   image: { repository: otel/opentelemetry-collector-contrib }
   command:
     name: otelcol-contrib
-    extraArgs: ["--config=/conf/collector.yaml"]
+    extraArgs: ["--config=/etc/arbor/collector.yaml"]
   extraVolumes:
-    - name: cfg
+    - name: arbor-cfg
       configMap: { name: otel-collector-config }
   extraVolumeMounts:
-    - { name: cfg, mountPath: /conf }
+    - { name: arbor-cfg, mountPath: /etc/arbor }
   extraEnvs:
     - name: OLLYGARDEN_API_KEY
       valueFrom:
@@ -53,6 +78,10 @@ opentelemetry-collector:
           name: ollygarden-api-key
           key: api-key
           optional: true
+    - name: K8S_NODE_NAME
+      valueFrom:
+        fieldRef:
+          fieldPath: spec.nodeName
   service:
     type: ClusterIP
 

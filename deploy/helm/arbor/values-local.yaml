@@ -1,3 +1,4 @@
 ollyGarden:
   otlpEndpoint: ""  # leave blank to skip cloud export in local demos
-imagePullPolicy: Never  # use locally-built kind images
+# Always pull so re-pushed images replace the kubelet's cached copy (same :main tag).
+imagePullPolicy: Always

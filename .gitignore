@@ -16,7 +16,7 @@ target/
 # Logs / runtime
 *.log
 logs/
-# Helm
-charts/*.tgz
+# Helm — subcharts (tgz + unpacked) are rebuilt by `helm dependency build`
+deploy/helm/arbor/charts/
 # OpenAPI generated drafts
 api/openapi/*.draft.yaml

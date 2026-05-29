@@ -25,7 +25,7 @@ data:
     processors:
       batch: {}
       memory_limiter: { check_interval: 1s, limit_mib: 400 }
-      resourcedetection: { detectors: [env, system, k8snode] }
+      resourcedetection: { detectors: [env, system] }
 
     exporters:
       otlp/jaeger:

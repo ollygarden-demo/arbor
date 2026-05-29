@@ -31,7 +31,7 @@ fi
 helm dependency update deploy/helm/arbor
 helm upgrade --install arbor deploy/helm/arbor \
   --namespace "$NS" \
-  --set imageRegistry="k3d-${REGISTRY_NAME}:${REGISTRY_PORT}/ollygarden-demo" \
+  --set imageRegistry="${REGISTRY_NAME}:5000/ollygarden-demo" \
   -f deploy/helm/arbor/values-local.yaml \
   --wait --timeout 10m
 

@@ -21,7 +21,7 @@ spec:
           imagePullPolicy: {{ .Values.imagePullPolicy }}
           ports: [{ containerPort: {{ $s.port }} }]
           env:
-            - { name: SPRING_PROFILES_ACTIVE,         value: "kubernetes" }
+            - { name: SPRING_PROFILES_ACTIVE,         value: "docker" }
             - { name: SERVER_PORT,                    value: "{{ $s.port }}" }
             - { name: OTEL_EXPORTER_OTLP_ENDPOINT,    value: "http://otel-collector:4318" }
             - { name: OTEL_SERVICE_NAME,              value: "{{ $s.name }}" }

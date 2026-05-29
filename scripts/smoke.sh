@@ -13,7 +13,7 @@ sleep 5
 k6 run --vus 2 --duration 10s scripts/load.js
 
 echo "→ querying Jaeger for traces"
-kubectl -n "$NS" port-forward svc/jaeger 16686:16686 >/dev/null &
+kubectl -n "$NS" port-forward svc/arbor-jaeger 16686:16686 >/dev/null &
 PFJ=$!
 trap "kill $PFG $PFJ 2>/dev/null || true" EXIT
 sleep 5

@@ -21,7 +21,7 @@ spec:
           imagePullPolicy: {{ .Values.imagePullPolicy }}
           ports: [{ containerPort: {{ $s.port }} }]
           env:
-            - { name: SPRING_PROFILES_ACTIVE,         value: "kubernetes" }
+            - { name: SPRING_PROFILES_ACTIVE,         value: "docker" }
             - { name: SERVER_PORT,                    value: "{{ $s.port }}" }
             - { name: EUREKA_CLIENT_SERVICE_URL_DEFAULT_ZONE, value: "http://discovery-server:8761/eureka/" }
             - { name: OTEL_EXPORTER_OTLP_ENDPOINT,    value: "http://otel-collector:4318" }

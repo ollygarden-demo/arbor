@@ -3,6 +3,8 @@ spring:
     name: notifications-service
   config:
     import: optional:configserver:${CONFIG_SERVER_URL:http://localhost:8888/}
+  main:
+    web-application-type: none
   kafka:
     bootstrap-servers: ${KAFKA_BOOTSTRAP:localhost:9092}
     consumer:
@@ -10,28 +12,13 @@ spring:
       value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
       auto-offset-reset: earliest
 
+# notifications-service is a Kafka-only consumer: no HTTP API, no Eureka.
 eureka:
   client:
-    serviceUrl:
-      defaultZone: ${EUREKA_SERVER_URL:http://localhost:8761/eureka/}
-
-server:
-  port: 8088
+    enabled: false
 
 management:
   endpoints:
     web:
       exposure:
         include: health, prometheus
-
----
-spring:
-  config:
-    activate:
-      on-profile: docker
-    import: configserver:http://config-server:8888
-
-eureka:
-  client:
-    serviceUrl:
-      defaultZone: http://discovery-server:8761/eureka/

@@ -59,3 +59,10 @@ spring:
     activate:
       on-profile: docker
     import: configserver:http://config-server:8888
+
+eureka:
+  client:
+    serviceUrl:
+      defaultZone: ${EUREKA_SERVER_URL:http://localhost:8761/eureka/}
+    healthcheck:
+      enabled: true

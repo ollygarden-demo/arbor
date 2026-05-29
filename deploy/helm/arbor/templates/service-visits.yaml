@@ -22,6 +22,7 @@ spec:
           ports: [{ containerPort: {{ $s.port }} }]
           env:
             - { name: SPRING_PROFILES_ACTIVE,         value: "kubernetes" }
+            - { name: SERVER_PORT,                    value: "{{ $s.port }}" }
             - { name: EUREKA_CLIENT_SERVICE_URL_DEFAULT_ZONE, value: "http://discovery-server:8761/eureka/" }
             - { name: CONFIG_SERVER_URL,              value: "http://config-server:8888" }
             - { name: KAFKA_BOOTSTRAP,                value: "arbor-kafka:9092" }

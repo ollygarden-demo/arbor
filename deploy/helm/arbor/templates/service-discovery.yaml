@@ -6,6 +6,7 @@ metadata:
   labels: {{- include "arbor.labels" (dict "name" $s.name) | nindent 4 }}
 spec:
   replicas: 1
+  strategy: { type: Recreate }
   selector: { matchLabels: { app.kubernetes.io/name: {{ $s.name }} } }
   template:
     metadata:
@@ -22,9 +23,16 @@ spec:
           ports: [{ containerPort: {{ $s.port }} }]
           env:
             - { name: SPRING_PROFILES_ACTIVE,         value: "kubernetes" }
+            - { name: SERVER_PORT,                    value: "{{ $s.port }}" }
+            - { name: EUREKA_CLIENT_REGISTER_WITH_EUREKA, value: "false" }
+            - { name: EUREKA_CLIENT_FETCH_REGISTRY,   value: "false" }
             - { name: OTEL_EXPORTER_OTLP_ENDPOINT,    value: "http://otel-collector:4318" }
             - { name: OTEL_SERVICE_NAME,              value: "{{ $s.name }}" }
             - { name: OTEL_RESOURCE_ATTRIBUTES,       value: "deployment.environment=arbor" }
+            - { name: JAVA_TOOL_OPTIONS, value: "-XX:+UseContainerSupport -Xmx256m -javaagent:/opt/app/otel-javaagent.jar -Dotel.config.file=/opt/app/configs/otel.yaml" }
+          resources:
+            requests: { cpu: 50m, memory: 256Mi }
+            limits: { memory: 512Mi }
           readinessProbe:
             httpGet: { path: /actuator/health/readiness, port: {{ $s.port }} }
             initialDelaySeconds: 60

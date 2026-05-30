@@ -61,7 +61,14 @@ kafka:
         repository: bitnamilegacy/jmx-exporter
 
 opentelemetry-collector:
+  fullnameOverride: otel-collector
   mode: deployment
+  clusterRole:
+    create: true
+    rules:
+      - apiGroups: [""]
+        resources: ["pods", "namespaces"]
+        verbs: ["get", "list", "watch"]
   image: { repository: otel/opentelemetry-collector-contrib }
   command:
     name: otelcol-contrib
@@ -86,6 +93,19 @@ opentelemetry-collector:
     type: ClusterIP
 
 jaeger:
+  fullnameOverride: jaeger
+  jaeger:
+    extraEnv:
+      - name: GOMEMLIMIT
+        value: "384MiB"
+      - name: GOGC
+        value: "50"
+    resources:
+      requests:
+        cpu: 50m
+        memory: 256Mi
+      limits:
+        memory: 512Mi
   provisionDataStore: { cassandra: false }
   allInOne: { enabled: true }
   storage: { type: memory }

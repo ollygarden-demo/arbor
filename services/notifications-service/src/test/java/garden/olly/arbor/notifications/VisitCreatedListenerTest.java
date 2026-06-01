@@ -24,6 +24,6 @@ class VisitCreatedListenerTest {
     void processesVisitCreatedEvents() {
         kafka.send("visit.created", "1", "{\"id\":1,\"petId\":42,\"description\":\"checkup\"}");
         await().atMost(Duration.ofSeconds(10))
-               .untilAsserted(() -> assertThat(listener.processedCount()).isEqualTo(1));
+               .untilAsserted(() -> assertThat(listener.processedCount()).isEqualTo(1.0));
     }
 }

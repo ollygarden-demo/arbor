@@ -20,6 +20,7 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.Min;
 
 import io.micrometer.core.annotation.Timed;
+import io.opentelemetry.api.trace.Span;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -66,6 +67,13 @@ class VisitResource {
         visit.setPetId(petId);
         log.info("Saving visit {}", visit);
         Visit saved = visitRepository.save(visit);
+        // Annotate the auto-created HTTP server span with business identifiers.
+        // petclinic.pet.id and petclinic.visit.id are HIGH-cardinality span attributes;
+        // they are NEVER used as metric label dimensions.
+        // Do NOT record visit.description — free-form text that may contain clinical notes.
+        Span.current()
+            .setAttribute("petclinic.pet.id", saved.getPetId())
+            .setAttribute("petclinic.visit.id", saved.getId());
         visitEventPublisher.publish(new VisitCreatedEvent(
             saved.getId(), saved.getPetId(), saved.getDate(), saved.getDescription()));
         return saved;

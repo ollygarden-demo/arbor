@@ -1,0 +1,46 @@
+file_format: "1.0"
+
+resource:
+  attributes:
+    - name: service.name
+      value: ${env:OTEL_SERVICE_NAME:-api-gateway}
+    - name: deployment.environment.name
+      value: arbor
+    - name: service.owner.url
+      value: https://github.com/ollygarden-demo/arbor
+
+tracer_provider:
+  sampler:
+    parent_based:
+      root:
+        trace_id_ratio_based:
+          ratio: ${env:OTEL_TRACES_SAMPLER_ARG:-0.1}
+  processors:
+    - batch:
+        schedule_delay: 5000
+        export_timeout: 30000
+        max_queue_size: 2048
+        max_export_batch_size: 512
+        exporter:
+          otlp:
+            endpoint: ${env:OTEL_EXPORTER_OTLP_ENDPOINT:-http://otel-collector:4318}
+            protocol: http/protobuf
+
+meter_provider:
+  readers:
+    - periodic:
+        interval: 60000
+        timeout: 30000
+        exporter:
+          otlp:
+            endpoint: ${env:OTEL_EXPORTER_OTLP_ENDPOINT:-http://otel-collector:4318}
+            protocol: http/protobuf
+
+# logger_provider is intentionally absent — no OTel log export configured.
+# No redaction policy is defined for this service; Logback output remains local only.
+
+propagator:
+  composite:
+    # W3C Trace Context only. Baggage is intentionally omitted:
+    # no tenant.id / user.id injection code exists at api-gateway yet.
+    - tracecontext

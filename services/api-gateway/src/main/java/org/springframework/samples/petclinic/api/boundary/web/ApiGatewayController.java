@@ -21,6 +21,7 @@ import org.springframework.samples.petclinic.api.application.CustomersServiceCli
 import org.springframework.samples.petclinic.api.application.VisitsServiceClient;
 import org.springframework.samples.petclinic.api.dto.OwnerDetails;
 import org.springframework.samples.petclinic.api.dto.Visits;
+import io.opentelemetry.api.trace.Span;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -58,7 +59,15 @@ public class ApiGatewayController {
                 visitsServiceClient.getVisitsForPets(owner.getPetIds())
                     .transform(it -> {
                         ReactiveCircuitBreaker cb = cbFactory.create("getOwnerDetails");
-                        return cb.run(it, throwable -> emptyVisitsForPets());
+                        return cb.run(it, throwable -> {
+                            // Circuit breaker fired: visits-service unavailable or erroring.
+                            // Annotate the current server span so this degraded response is
+                            // distinguishable from a genuinely empty visit list.
+                            // Do NOT set span status to ERROR — this is a handled degraded state;
+                            // the HTTP response is still 200 with empty visits.
+                            Span.current().setAttribute("visits.fallback.active", true);
+                            return emptyVisitsForPets();
+                        });
                     })
                     .map(addVisitsToOwner(owner))
             );

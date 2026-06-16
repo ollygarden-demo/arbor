@@ -86,7 +86,7 @@ class OwnerResource {
         final Owner ownerModel = ownerRepository.findById(ownerId).orElseThrow(() -> new ResourceNotFoundException("Owner " + ownerId + " not found"));
 
         ownerEntityMapper.map(ownerModel, ownerRequest);
-        log.info("Saving owner {}", ownerModel);
+        log.info("Saving owner id={}", ownerModel.getId());
         ownerRepository.save(ownerModel);
     }
 }

@@ -5,6 +5,8 @@ spring:
     import: optional:configserver:${CONFIG_SERVER_URL:http://localhost:8888/}
   kafka:
     bootstrap-servers: ${KAFKA_BOOTSTRAP:localhost:9092}
+    template:
+      observation-enabled: true
     producer:
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
       value-serializer: org.apache.kafka.common.serialization.StringSerializer

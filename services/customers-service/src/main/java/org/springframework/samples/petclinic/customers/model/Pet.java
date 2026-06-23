@@ -59,10 +59,7 @@ public class Pet {
         return new ToStringCreator(this)
             .append("id", this.getId())
             .append("name", this.getName())
-            .append("birthDate", this.getBirthDate())
-            .append("type", this.getType().getName())
-            .append("ownerFirstname", this.getOwner().getFirstName())
-            .append("ownerLastname", this.getOwner().getLastName())
+            .append("type", this.getType() != null ? this.getType().getName() : null)
             .toString();
     }
 

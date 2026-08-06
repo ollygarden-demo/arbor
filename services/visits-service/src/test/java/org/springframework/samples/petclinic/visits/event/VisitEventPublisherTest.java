@@ -35,6 +35,7 @@ class VisitEventPublisherTest {
             c.subscribe(Collections.singleton("visit.created"));
             ConsumerRecord<String, String> rec = KafkaTestUtils.getSingleRecord(c, "visit.created");
             assertThat(rec.value()).contains("\"petId\":42");
+            assertThat(rec.headers().lastHeader("traceparent")).isNotNull();
         }
     }
 }

@@ -58,11 +58,8 @@ public class Pet {
     public String toString() {
         return new ToStringCreator(this)
             .append("id", this.getId())
-            .append("name", this.getName())
-            .append("birthDate", this.getBirthDate())
-            .append("type", this.getType().getName())
-            .append("ownerFirstname", this.getOwner().getFirstName())
-            .append("ownerLastname", this.getOwner().getLastName())
+            .append("typeId", this.type == null ? null : this.type.getId())
+            .append("ownerId", this.owner == null ? null : this.owner.getId())
             .toString();
     }
 

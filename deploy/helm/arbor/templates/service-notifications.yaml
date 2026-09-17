@@ -10,6 +10,10 @@ spec:
   template:
     metadata:
       labels: {{- include "arbor.labels" (dict "name" $s.name) | nindent 8 }}
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "{{ $s.port }}"
+        prometheus.io/path: "/actuator/prometheus"
     spec:
       containers:
         - name: app

@@ -9,6 +9,8 @@ spring:
       key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
       value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
       auto-offset-reset: earliest
+    listener:
+      observation-enabled: true
 
 # notifications-service is a Kafka-only consumer: no HTTP API, no Eureka.
 eureka:

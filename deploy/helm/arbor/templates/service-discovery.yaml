@@ -24,8 +24,10 @@ spec:
             - { name: SPRING_PROFILES_ACTIVE,         value: "docker" }
             - { name: SERVER_PORT,                    value: "{{ $s.port }}" }
             - { name: OTEL_EXPORTER_OTLP_ENDPOINT,    value: "http://otel-collector:4318" }
+            - { name: OTEL_EXPORTER_OTLP_PROTOCOL,    value: "http/protobuf" }
             - { name: OTEL_SERVICE_NAME,              value: "{{ $s.name }}" }
             - { name: OTEL_RESOURCE_ATTRIBUTES,       value: "deployment.environment=arbor" }
+            - { name: OTEL_PROPAGATORS,               value: "tracecontext,baggage" }
           readinessProbe:
             httpGet: { path: /actuator/health/readiness, port: {{ $s.port }} }
             initialDelaySeconds: 60

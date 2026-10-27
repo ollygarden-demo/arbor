@@ -28,7 +28,7 @@ spec:
             - { name: KAFKA_BOOTSTRAP,                value: "arbor-kafka:9092" }
             - { name: OTEL_EXPORTER_OTLP_ENDPOINT,    value: "http://otel-collector:4318" }
             - { name: OTEL_SERVICE_NAME,              value: "{{ $s.name }}" }
-            - { name: OTEL_RESOURCE_ATTRIBUTES,       value: "deployment.environment=arbor" }
+            - { name: OTEL_RESOURCE_ATTRIBUTES,       value: "deployment.environment.name=arbor" }
           readinessProbe:
             httpGet: { path: /actuator/health/readiness, port: {{ $s.port }} }
             initialDelaySeconds: 60
